@@ -1,0 +1,10 @@
+^C:\USERS\ISAK_\PROJECTS\TDDD38-ADVANCED-CPP\EXAMS\200603-SOLUTION\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Isak_/projects/tddd38-advanced-cpp/exams/200603-solution -BC:/Users/Isak_/projects/tddd38-advanced-cpp/exams/200603-solution/build --check-stamp-file C:/Users/Isak_/projects/tddd38-advanced-cpp/exams/200603-solution/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

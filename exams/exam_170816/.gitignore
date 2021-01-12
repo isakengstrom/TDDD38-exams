@@ -1,0 +1,8 @@
+# Cmake files
+*/build/
+*/cmake-build-debug/
+
+# IDE files
+*/.idea/
+
+# Misc 

@@ -1,0 +1,43 @@
+Answers for theory questions TDDD38 exam 2018-04-05
+
+a) When the compiler tries to find an operator, such as in the expression a @ b for some binary operator @,
+it will first look for a member of a and secondly a free function. Since the output operator usually is called
+with a stream as the left hand side argument, that would require us to either add our operator as a member
+of the stream (bad) or creating a free function.
+
+b) Here is a list of all operators that have to be non-static members:
+   * operator[]
+   * operator()
+   * operator=
+   * operator->
+
+c) An inline namespace is an inner namespace prefixed with the keyword inline. Members of the inline namespace
+   will automatically be inserted into the outer namespace but it is possible to only import names from the 
+   inline namespace as a user.
+   namespace outer {
+      inline namespace inner {
+        void foo(int);
+      }
+      void foo(char);
+   }
+
+   {
+      using namespace outer; // get access to both overloads
+      foo(5); // calls foo(int)
+   }
+   {
+      using namespace outer::inner;
+      foo(5); // calls foo(int)
+      foo('a'); // no access to outer, calls foo(int)
+   }
+
+  This is used alot in the stl, we could write "using namespace std::literals" to only get access to the
+  user-defined literals (such as suffix s on string literals) but not having access to the entire stl.
+
+d) Returning a reference to a local variable result in trying to call length on something that is destroyed.
+   If it was returned by const-ref, the lifetime of the temporary object would have been extended, but not
+   with reference.
+
+e) The main problem is that calling a virtual function from a constructor will always call the implementation
+   for the current class, not the most-derived class as we are used to. Note that calling a virtual function 
+   from the base class usually calls the implementation of the most-derived class, even if it is marked pure.

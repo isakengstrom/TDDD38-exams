@@ -1,0 +1,43 @@
+Answers to theory questions 190111
+
+a) Placement new is a special version of the new-operator that
+initializes an object on a specified memory location. It does not
+allocate any memory: it only calls the constructor on a specific
+memory location. Example:
+
+int x{};
+new (&x) int{5};
+
+b) due to the most vexing parse, f will be a function and since cout
+does not have an overload for function pointers the compiler will
+convert the function-pointer to bool.
+
+c) Example #1:
+
+template <typename T>
+void foo(T&& ref) // here T&& is forwarding reference
+{
+
+}
+
+Example #2:
+
+auto&& f{ /* ... */ }; // here auto&& is forwarding reference
+
+d) The as if rule states that the compiler is allowed to make any
+modifications to the program as long as the observable behaviour is
+the same.
+
+e) An inline namespace is a namespace that will export all members into the namespace above.
+Example:
+
+inline namespace my_namespace {
+  // ...
+}
+
+is equivalent to:
+
+namespace my_namespace {
+  // ...
+}
+using namespace my_namespace;

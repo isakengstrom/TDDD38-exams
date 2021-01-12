@@ -1,0 +1,5 @@
+C:/Users/Isak_/projects/tddd38-advanced-cpp/exams/200603-solution/build/CMakeFiles/executable1.dir
+C:/Users/Isak_/projects/tddd38-advanced-cpp/exams/200603-solution/build/CMakeFiles/executable2.dir
+C:/Users/Isak_/projects/tddd38-advanced-cpp/exams/200603-solution/build/CMakeFiles/executable3.dir
+C:/Users/Isak_/projects/tddd38-advanced-cpp/exams/200603-solution/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/Isak_/projects/tddd38-advanced-cpp/exams/200603-solution/build/CMakeFiles/ZERO_CHECK.dir
