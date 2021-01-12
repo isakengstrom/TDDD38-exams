@@ -1,0 +1,42 @@
+a) The pointer inside variable x in main gets delete twice: once
+   manually with "delete x.ptr" and once in the destructor of X, which
+   gets called at the end of the main function.
+
+b) if-statements are evaluated during runtime while if constexpr is
+   evaluated during compile-time. This means that the condition of if
+   constexpr statements must be possible to evaluate during
+   compilation.
+
+c) Like this:
+
+int main()
+{
+  A a{};
+  decltype(a.get()) b{}; // decltype doesn't evaluate the expression
+}
+
+d)
+
+Example 1:
+
+static_cast<int&&>(5)
+
+Example 2:
+
+Given:
+int x{};
+Then:
+std::move(x)
+is an xvalue expression.
+
+Example 3:
+
+Given:
+int&& x{5};
+Then:
+x
+is an xvalue expression.
+
+
+e) A union is a class type where all fields share the same memory
+   while each field in a struct has its own distinct memory.

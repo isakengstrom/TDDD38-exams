@@ -1,0 +1,39 @@
+----------------------------------------------
+--------------- Assignment 1 -----------------
+----------------------------------------------
+Main reason is to safeguard against overloads of operator& for user-defined types. These can return anything and they might need the actual address. Of course the name addressof is a better name as well.
+----------------------------------------------
+--------------- Assignment 2 -----------------
+----------------------------------------------
+A forwarding reference is a template parameter defined as T&& such as 
+template <typename T>
+void foo(T && ref)
+{
+
+}
+A forwarding reference will work with any type having any expression categorization due to reference collapsing. An r-value reference will only bind to temporaries (r-values).
+
+----------------------------------------------
+--------------- Assignment 3 -----------------
+----------------------------------------------
+A lambda generates an anonymous closure object according to example below:
+auto l = [](int a){return 2;};
+
+struct __NAME
+{
+    auto operator()(int a) const { return 2; };
+};
+
+A GENERIC lambda is a lambda that takes at least one parameter of type auto which will generate a templated operator():
+
+auto gl = [](auto p) { return 2; };
+
+struct __NAME
+{
+    template <typename T>
+    auto operator()(T p) const { return 2; }
+};
+----------------------------------------------
+--------------- Assignment 4 -----------------
+----------------------------------------------
+Only random-access iterators support comparison with operator<. This will not compile with containers that doesn't support random-access. Instead operator!= should be used.

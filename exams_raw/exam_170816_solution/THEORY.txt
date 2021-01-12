@@ -1,0 +1,38 @@
+Possible answers for theory part of TDDD38 exam 2017-08-16
+
+a) The virtual keyword tells the compiler that a function can be used in a polymorphic context. Polymorphism involves dynamic dispatch during runtime, even if the function isn't overloaded. If this was default behavior for all classes, an overhead would be added in all programs - even if your class doesn't use polymorphism. This would break the zero overhead principle.
+
+In C++, a virtual function will usually give both runtime and memory overhead.
+
+b) Mainly to be used as template arguments since it's easier to work with types in template parameters.
+
+c) 
+    1) Memory overhead - bad with unnecessary copies
+    2) Slicing, catching with reference opens up for polymorphism
+
+d) One solution is with templates (showed during a seminar):
+
+    class C
+    {
+      int i;
+    public:
+      C(int v): i{v} {}
+      template <typename T>
+      C(T) = delete;
+    };
+
+   Here we allow the int version and then there is a template version. If we call it with int, the standard function will be called. If we call with any other type, the template version will be instantiated and then access will be controlled (=delete) and we will get a compilation failure.
+
+e) noexcept specifier is used to mark a function as noexcept. A noexcept function mustn't throw any exceptions (or program will abort). Can be written as follows:
+    void fun() noexcept;        // fun may not throw
+    void fun() noexcept(true);  // fun may not throw
+    void fun() noexcept(false); // fun may throw
+   noexcept operator can only be used in the noexcept specifier context and can be used to check if an expression is noexcept or not. This is usually used for general functions. An example is std::swap that is noexcept if the type to swap values has noexcept move assignment and construction:
+    template <typename T>
+    void swap(T & a, T & b) 
+                            noexcept(  // noexcept specifier
+                                noexcept(  // noexcept operator
+                                    std::is_noexcept_move_constructable_v<T> &&
+                                    std::is_noexcept_move_assignable_v<T>
+                                )
+                            );
