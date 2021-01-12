@@ -1,8 +1,12 @@
 # TDDD38-exams
-Previous exam files and solutions for the course [Advanced programming in C++ (TDDD38)](https://www.ida.liu.se/~TDDD38/) at LiU, with prepared CMake configurations. The repo contains two folders:
+Previous exam files and solutions for the course [Advanced programming in C++ (TDDD38)](https://www.ida.liu.se/~TDDD38/) at LiU. 
+
+This repo was created to simplify the process of downloading the exam files. It is a somewhat faster process to clone this repo, than to download each file separatly.
+
+The repo contains two folders:
 
 - [exams_cmake](exams_cmake/) - Contains the given files and solutions to the exams of the course, with ready to use Cmake configurations.
-- [exams_raw](exams_raw/) - Just the exam files, no BS
+- [exams_raw](exams_raw/) - Just the files, no BS
 
 <br />
 
