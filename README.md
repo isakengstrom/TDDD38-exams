@@ -15,6 +15,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Make sure that the correct flags are provided to the compiler here:
 function(enable_warnings target) 
 	target_compile_options(${target} PUBLIC 
 		$<$<CXX_COMPILER_ID:MSVC>:/W4 /permissive->
@@ -31,14 +32,4 @@ enable_warnings( executable1 )
 
 add_executable( executable2 assignment2.cc )
 enable_warnings( executable2 )
-```
-
-Also, make sure that the correct flags are provided to the compiler in the following function:
-```cmake
-function(enable_warnings target)
-	target_compile_options(${target} PUBLIC 
-		$<$<CXX_COMPILER_ID:MSVC>:/W4 /permissive->
-		$<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-Wall -Wextra -Wconversion>
-	)
-endfunction()
 ```
