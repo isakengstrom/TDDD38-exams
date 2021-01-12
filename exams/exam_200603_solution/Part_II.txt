@@ -1,0 +1,242 @@
+==== Question #1 ====
+
+There are 5 classes in my solution:
+
+JSON_Value  : Pure-virtual base class for the other classes
+              representing different values that can be stored inside
+              a JSON object. It has two virtual member functions,
+              'print' and 'copy'.
+
+              'print' take a std::ostream& and prints the textual
+              representation of this JSON value to that stream.
+
+              'copy' returns a deep-copy of this object.
+
+              This class have no data members.
+
+JSON_Null   : Represents an empty JSON field. This is a subclass of
+              JSON_Value which overrides 'print' and 'copy'. It has no
+              data members. 'print' will print "null" to the stream.
+
+JSON_Data   : Represents a "normal" value. Is a subclass template of
+              JSON_Value. It takes one template parameter T. T is the
+              type of the data stored inside this class. In my
+              testprogram I instantiate std::string and double.
+
+              It has one data member called 'value' which is of type
+              T. This value is printed in 'print'.
+
+              There is an explicit template specialization of this
+              class for T = std::string. This is because print must
+              add " before and after the actual string when printing.
+
+JSON_Object : Represents a JSON object. Is a subclass of JSON_Value.
+              Contains several fields associated with string keys. It
+              has one data member, 'fields' which is an
+              std::unordered_map<std::string, JSON_Value*> where each
+              field is stored with their keys.
+
+              It overrides 'print' so that it iterates through
+              'fields' and prints each field on the format:
+              
+              key = value
+
+              where value is the textual representation of that fields
+              value.
+
+              'copy' will go through each field and make a deep-copy
+              of them with the fields 'copy' functions.
+
+              It also adds two more member functions, 'lookup' and
+              'visit'.
+
+              'lookup' takes a key and returns a reference to the
+              corresponding value. If no such key exists it will
+              insert it together with nullptr. This allows us to
+              assign a new value to it.
+
+              BEWARE: If we assign to an already existing value we
+              first have to delete that value.
+
+              'visit' is a function template that takes an arbitrary
+              callable object 'f'. It will call 'f' on the key and
+              value of each field.
+
+              After that 'visit' will recursively call 'visit' on each
+              JSON_Object field.
+
+==== Question #2 ====
+
+Adding a list as a possible value would mean creating another class
+JSON_List that stores a std::vector (or something similar) and has a
+print function that prints all the values recursively. Something like this:
+
+class JSON_List : public JSON_Value
+{
+public:
+    JSON_List(std::initializer_list<JSON_Value*> values)
+        : list {values.begin(), values.end()}
+    {}
+
+    void print(std::ostream& os) const override
+    {
+        os << '[';
+        bool first { true };
+        for (auto&& value : list)
+        {
+            if (!first)
+            {
+                os << ",";
+            }
+            else
+            {
+                first = false;
+            }
+            os->print(value);
+        }
+        os << ']';
+    }
+
+    JSON_Value* copy() const override
+    {
+        JSON_List* tmp { new JSON_List{} };
+        for (auto&& value : list)
+        {
+            tmp->list.push_back(value->copy());
+        }
+        return tmp;
+    }
+    
+private:
+    std::vector<JSON_Value*> list{};
+};
+
+No other place needs to change to accomodate for this. This means it
+is very easy since we only need to care about adding functionality, no
+already existing functionality needs to change. Not even the create
+function since I have changed it to a template instead that allows the
+user to specify as a template-parameter which type they want to
+create.
+
+My design allows for this since I have changed all the value types to
+be represented in a class hierarchy rather than by a tag variable
+('type' in the given file).
+
+==== Question #3: Alternative 1 ====
+
+In the given file we had the following functions:
+
+// Function used to create a JSON Value that is null
+JSON_Value* create_null()
+{
+    return new JSON_Value{};
+}
+
+// Function used to create a JSON Value that contains a string
+JSON_Value* create_string(std::string const& value)
+{
+    return new JSON_Value{"string", nullptr, value};
+}
+
+// Function used to create a JSON Value that contains a number
+JSON_Value* create_number(double value)
+{
+    return new JSON_Value{"number", nullptr, std::to_string(value)};
+}
+
+// Function used to create a JSON Value that contains an object
+JSON_Value* create_object(JSON_Object* object)
+{
+    return new JSON_Value{"object", object};
+}
+
+In my code I generalized them to one function template, like this:
+
+template <typename T, typename... Args>
+JSON_Value* create(Args&&... args)
+{
+    return new T{std::forward<Args>(args)...};
+}
+
+Which allows the user to specify what they want to create in a more
+general way. This also means that whenever a new subclass is added we
+don't have to worry about adding a create function for it, instead it
+is handled by the template.
+
+The variadic template allows us to take any combination of parameters
+and pass them to the constructor of T.
+
+==== Question #3: Alternative 2 ====
+
+I made JSON_Data to a class template:
+
+template <typename T>
+class JSON_Data : public JSON_Value
+{
+public:
+
+    JSON_Data(T const& value)
+        : value { value }
+    { }
+    
+    void print(std::ostream& os) const override
+    {
+        os << value;
+    }
+
+    JSON_Value* copy() const override
+    {
+        return create<JSON_Data<T>>(value);
+    }
+    
+private:
+    T value;
+};
+
+I did this because it makes the code more general. It allows the user
+to store whatever data type they want, for example std::string,
+double, int, bool etc. without having to create a subclass for every
+type they need.
+
+==== Question #3: Alternative 3 ====
+
+I made JSON_Object::visit to a function template taking a callable
+object. In the given code the visit function only worked for callable
+objects that can be bound to a function pointer, but in my version
+anything can be taken, meaning that all callable objects are
+acceptable (anything that is not callable will cause a compile error).
+
+An alternative way to get the same generality, but with better error
+messages, is to take a std::function instead. However I opted not to
+do that since std::function is quite significantly slower in the
+runtime since it has to manage dynamic memory in order to store an
+arbitrary callable object.
+
+==== Question #4 ====
+
+In the given code the fields of a JSON_Object was represented as two vectors:
+
+    std::vector<std::string> keys   {};
+    std::vector<JSON_Value*> values {};
+
+Where the keys and the values are associated through the corresponding
+index in each vector. This is not good design for primarily two reasons:
+
+- The key and the value is not stored together meaning more things can
+  go wrong in the book keeping (we might for example move a key in the
+  vector but not its corresponding value and if that happens
+  everything will break).
+
+- Storing them in insertion order makes lookup very slow (O(n)).
+
+Instead I use std::unordered_map to associate the (unique) keys to its
+corresponding value. This makes for a much better design because now
+lookup is amortized constant time (rather than linear), instead and
+the keys is stored together with its value. It also clearly
+communicates this association to the reader.
+
+I choose std::unordered_map over std::map for two reasons:
+
+- There is no requirements on the order of the fields
+- std::unordered_map is a lot faster that std::map due to it not
+- having to keep a specific order, among other reasons.

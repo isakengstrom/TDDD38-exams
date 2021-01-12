@@ -1,0 +1,48 @@
+Question 1:
+The function is parameterized on one type. Calling it with two different types will not work.
+The task is to change the call (not any of the declarations) and there are thus two different
+kind of solutions, explicitly converting one of the arguments or explicitly instantiate the
+function for a specific type:
+
+  max<double>(i,d);
+
+  max(static_cast<double>(i), d);
+
+
+Question 2:
+An unnamed namespace is a namespace without a name (duh). Everything declared in an unnamed
+namespace is automatically used directly after the namespace declaration (just like you hadn't
+had the namespace). The great thing about unnamed namespaces is that they are local to that
+specific file, i.e. the declarations cannot be accessed from outside the file.
+
+Question 3:
+There are two (and only two) places where mutable can be used according to the standard:
+
+    1. When declaring a non-static, non-const, non-reference member to make it possible to
+       change that member in a const expression such as from a const-declared member function
+       or on a const object.
+
+    2. Together with a lambda to be able to change the members of the created closure object: 
+       [var]() mutable {++var;}
+
+
+Question 4:
+Let's say we have two types, T and U. The following example shows two examples of conversion, via a
+type converting constructor (constructor taking ONE argument of the type we want to convert from) and a
+type converting operator.
+
+class T
+{
+    T(U) {...} // converting from U to T via a constructor
+    operator U() {...} // conversion operator, from T to U
+
+
+Question 5:
+A delegating constructor is a constructor that calls another constructor for THE SAME class.
+The call MUST be in the member initializer list.
+
+class Foo
+{
+    Foo(int i, double d) : vi{i}, di{d} {}
+    Foo(int i) : Foo{i,0.0} {} // delegating constructor call
+}

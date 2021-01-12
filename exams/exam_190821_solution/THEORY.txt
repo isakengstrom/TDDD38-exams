@@ -1,0 +1,29 @@
+a) 
+
+template <typename... Args>
+int sum(Args... args)
+{
+  return (args + ...); // fold-expression
+}
+
+b) override signals to the compiler that this function is meant to
+   override a virtual function. It is not required to override a
+   virtual function but it will force the compiler to check that it
+   actually overrides a function.
+
+c) 
+
+A{}.foo(); // valid call
+
+A a;
+a.foo(); // not a valid call
+
+foo has an rvalue ref-qualifier which means it can only be called from
+rvalue objects.
+
+d) a type template parameter will bind to type while a nontype
+template parameter will bind to a value known during compile time.
+
+e) slicing is when a derived class is copied as if it is its base
+   class. This will cause any member variables introduced in the
+   derived class to be lost.

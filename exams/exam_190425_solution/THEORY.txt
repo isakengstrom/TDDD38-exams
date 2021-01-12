@@ -1,0 +1,20 @@
+a) rvalue (more specifically xvalue) since we return x as an rvalue-reference.
+
+b) 
+
+template <template <typename> typename T>
+void fun(T<int> x)
+{
+  // ...
+}
+
+c) The diamond problem occurs when two superclasses have the same
+base class thus giving rise to ambiguities in the subclass when using
+members of the common base class.
+
+d) It is a rule regarding name lookup. If a function cannot be
+found by the normal lookup rules the compiler is allowed to look in
+the namespaces of the objects passed in to the function as parameters.
+
+e) That we wish the function or variable to be evaluated during
+compile-time if possible.

@@ -1,0 +1,11 @@
+Answers to theory questions 180531
+
+a) T&& is a forwarding reference and could be bound to an lvalue. We don't want to move lvalues so doing std::forward<T>(value) would be a better solution.
+
+b) The as-if rule state that the compiler is allowed to make any change it like to your code as long as the observable behaviour is unchanged.
+
+c) std::terminate is called and the program craches
+
+d) Data members will always be initialized in declaration order, no matter what order we list them in the member initializer list. This would mean that x is initialized with an uninitialized value of y and then y is initialized with value.
+
+e) The static type of an object is it's declared type and will never change. The dynamic type is a runtime attrubute and could change. In C++ this is common with polymorphism. A Base* will always have the same static type but can point to different types of objects of subclass type, i.e. have different dynamic type during the runtime of our program.
