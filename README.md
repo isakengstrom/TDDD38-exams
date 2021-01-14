@@ -1,7 +1,7 @@
 # TDDD38-exams
 Previous exam files and solutions for the course [Advanced programming in C++ (TDDD38)](https://www.ida.liu.se/~TDDD38/) at LiU. 
 
-This repo was created to simplify the process of downloading the exam files. It is a somewhat faster process to clone this repo, than to download each file separatly.
+This repo was created to simplify the process of downloading the exam files. It is a somewhat faster process to clone this repo, than to download each file separately.
 
 The repo contains two folders:
 
