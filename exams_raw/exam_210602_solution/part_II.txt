@@ -1,0 +1,292 @@
+1. Describe the class hierarchy of your solution. You should do one of
+   these:
+   - describe the classes and their relationships textually
+   - draw a UML diagram (photos of hand drawn diagrams or digitally
+     drawn diagrams are both OK)
+----------------------------------------------------------------------
+
+There are two class hierarchies, the hierarchy with 'Value' as base
+class, and the hierarchy with 'Operation' as base class.
+
+'Value' has three virtual functions:
+
+- The destructor
+
+- 'print' which takes a reference 'os' to an std::ostream and is meant
+  to print the content of the value to 'os'.
+
+- 'clone' which returns a Value pointer. This virtual function is
+  meant to define how copies of objects are created.
+
+'Value' has three derived classes:
+
+- Data<T> which is a class template that stores a single value of type
+  'T' (template type parameter). It will assume that T can be printed
+  to a stream with operator<< and is copyable.
+
+- Text which inherits from Data<std::string>. This is done to reduce
+  code duplication (we don't have to create a new data member, nor a
+  constructor).
+
+- List which represents a list of values. This means it stores a
+  vector of Value pointers. It also introduces new member functions,
+  namely:
+
+  * begin & end which gives access to the iterators of the underlying
+    vector.
+
+  * remove which allows us to erase an iterator range from the
+    underlying vector.
+
+  * insert which is a function template that takes two iterators and
+    insert that range of values into the underlying vector.
+
+'Operation' has two virtual functions:
+
+- The destructor
+
+- 'apply' which takes a pointer to a Value object. This function is
+  meant to apply a certain operation on that specific Value object.
+
+'Operation' has three derived classes:
+
+- Duplicate which doesn't have any data members. apply will only do
+  anything if the passed in parameter points to a List object. Then it
+  will duplicate all values stored in that list by calling their
+  corresponding 'clone' functions.
+
+- Filter<Predicate> which is a class template where the template type
+  parameter Predicate is supposed to be any callable type. This class
+  will store a Predicate object, and use that to remove all elements
+  from the passed in Value (if it is a List) for whom 'predicate'
+  returns false.
+
+- Replace_Text which keeps track of a table of string substitutions in
+  an std::unordered_map. The apply function will only do anything if
+  the passed in Value object is a List. If that is the case it will
+  further only examine Text elements in the list. If any Text element
+  exists in the substitution table it will replace the Text value with
+  the associated string in the table.
+
+======================================================================
+
+2. Discuss how and why your usage of polymorphism is better than the
+   given code. Describe the reasoning behind each virtual function,
+   each class and the encapsulation. Discuss how these things improve
+   the design of the program.
+----------------------------------------------------------------------
+
+The given code had several functions (print, clone and apply) that had
+to use complete enumeration to check which type of object it is
+dealing with and pick an implementation. This means that in order to
+add a new Value type we have to add cases for this in both print and
+clone. If we miss this then the code will compile, but will have the
+incorrect behaviours.
+
+In my code we instead made 'print' and 'clone' into pure-virtual
+member functions. This has several advantages:
+
+- This makes sure that each derived class (which represents the
+  different types of values) have to implement each function, since
+  otherwise the object cannot be created due to it being pure-virtual.
+
+- It couples the behaviour of each Value type into one class rather
+  than having it spread out in the whole code.
+
+- This allows us to make sure there are no redundant data members
+  (this is more related to the usage of inheritance and classes rather
+  than polymorphism, but this is a bonus we get from using
+  polymorphism).
+
+The same logic of course applies to the 'Operation' hierarchy as well
+with the 'apply' function.
+
+Another improvement is that this does not require the code to rely on
+string comparisons for the types. String comparisons are generally
+quite slow since it has to loop through the entire string to check for
+equality and also it is error-prone. What happens if we misspell a
+string somewhere? Well, then we get an incorrect program that still
+compiles. With polymorphism we make sure that the correct behaviour is
+always exhibited for each type.
+
+Besides these points, there are some advantages we gain for each
+virtual function, those are:
+
+'clone' is appropriated as virtual function since this allows us to
+control the dynamic type of each returned object without having to
+change the static declaration of the return type.
+
+'print' is a good virtual function since it allows the end-user to
+just say 'print' without having to think about what the specific
+behaviour is, which increases ease-of-use for the program. The same
+advantage is gained by making 'apply' virtual.
+
+======================================================================
+
+3. Describe a place where you used a class template or a variadic
+   template. Discuss why that template is an improvement compared to
+   the given code.
+----------------------------------------------------------------------
+
+class template:
+
+Data<T> is a class template. T represents the type of value stored in
+this class. This allows the user of the code to customize the
+behaviour better than the given code, since they can now store
+whatever type they desire. In the given code they were bound to
+integers. This also has the advantage that we can reuse this class as
+base classes to other more specific values.
+
+Variadic template:
+
+The List class needs a constructor that can take arbitrarily many
+Value* objects. This can be solved in two ways, either with
+std::initializer_list or with variadic templates.
+
+In my code I choose to do it with variadic templates since this offers
+more scalability than std::initializer_list. If we want to further
+develop this class this would make sure that we have access to
+different types which std::initializer_list does not. For example, if
+we want to initialization like this:
+
+List list { 1, 2, "My string", new List{4, 5} };
+
+Instead of the current:
+
+List list { new Data<int>{1}, new Data<int>{2}, new Text{"My string"},
+            new List{new Data<int>{4}, new Data<int>{5}} };
+
+This would be better supported by variadic templates. Of course we
+would have to make modification to the actual constructor in that
+case, for example by introducing the helper function:
+
+template <typename T>
+Value* create_value(T* value)
+{
+    return value;
+}
+
+Value* create_value(std::string value)
+{
+    return new Text{value};
+}
+
+template <typename T>
+Value* create_value(T&& value)
+{
+    return new Data<T>{std::forward<T>(value)};
+}
+
+Which we can then use to improve the behaviour of the constructor,
+like this:
+
+class List : public Value
+{
+    // ...
+    template <typename... Args>
+    List(Args&&... args)
+      : list{ create_value(std::forward<Args>(args))... }
+    { }
+};
+
+Which would not be possible with std::initializer_list.
+
+======================================================================
+
+4. Describe how you used a lambda function and why it was an
+   improvement. Compare lambda functions with normal
+   functions. Explain what a captured value is and describe how and
+   why you utilized it in your lambda function.
+----------------------------------------------------------------------
+
+I used a lambda with captures in two different ways. Both of which are
+related to STL algorithm use. First I use it in List::print together
+with std::for_each. This must be a lambda with a capture since it
+needs access to 'os' which is only available in the function scope.
+
+Second I use it in Filter::apply together with std::remove_if. Here
+once again I need access to a variable that is only available in the
+scope of the Filter class. More specifically I need access to the
+'predicate' object. But in order to access it I need to capture the
+entire 'this' object.
+
+A lambda function is similar to a function, but it is more general. A
+lambda can have state that is remembered between calls while this is
+impossible for normal functions. There can be several different
+instances of the same lambda, while there is only one instance of each
+normal function. This works because a lambda function is actually a
+function object.
+
+A captured value is a data member in the underlying function object
+that defines the lambda function. This is mostly used to get access to
+either references or copies of values that are only accessible in
+limited scopes, but it can also be used to define new data members for
+the lambda.
+
+======================================================================
+
+5. Discuss your usage of either a STL container or two STL
+   algorithms. Discuss why these changes are improvements compared to
+   the given code.
+----------------------------------------------------------------------
+
+STL container:
+
+In Replace_Text I used an std::unordered_map to represent the
+substitution table. In the given code this was done by keeping track
+of two vectors where one vector kept track of the keys and the other
+kept track of the values. These two vectors were associated via the
+index in the vectors. Using std::unordered_map instead of this "two
+vector" construction has several advantages:
+
+- Lookup is amortized constant time instead of linear (which it is for
+  the two vectors), so it is more efficient.
+
+- It is less error-prone if we ever decide to add new features to the
+  Replace_Text class since we don't have to think about the indicies.
+
+- It better communicates the intentions of the code since we now use a
+  clearer and more common construction.
+
+- It greatly simplifies the code for lookup (the get_index function
+  isn't even necessary anymore).
+
+Worth noting is that std::map would have worked as well, but since we
+don't care about the order in which these substitutions are iterated
+over, we get more speed out of it by using std::unordered_map.
+
+STL algorithms:
+
+I used the algorithms std::transform and std::remove_if in my
+code. Specifically i used std::transform in Duplicate::apply where I
+create a shallow copy of the list that will be duplicated and then
+apply std::transform on this shallow copy to turn it into a deep
+copy. The lambda in the std::transform calls clone on the pointer to
+create a new copy of it.
+
+This is an improvement since it:
+
+- Clearly communicates that we are transforming already existing
+  values inline inside the 'result' vector.
+
+- Allows us to partition the larger problem into distinct steps which
+  makes the flow of the program clearer (first we create all the new
+  values, then we copy them and finally we insert them to the list).
+
+I used std::remove_if to remove values in the Filter::apply
+function. Of course this doesn't really remove the values, but it sets
+the stage for easy removal.
+
+This has a few benefits:
+
+- removing multiple elements at once is a lot faster than removing
+  them one by one. In particular it is more efficient to remove
+  elements from the end of std::vector than from the middle. Because
+  of this, the behaviour of std::remove_if will make sure that removal
+  from our std::vector will be as efficient as possible since it moves
+  all values into a chunk at the end which we can then remove in
+  one go.
+
+- It communicates intent: we wish to remove something based on some
+  predicate. In this case we can also make sure to do cleanup work
+  *if* the element is to be removed (deleting the value).
