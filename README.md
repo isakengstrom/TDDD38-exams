@@ -12,4 +12,4 @@ The repo contains two folders:
 
 > **Note:** The C++ code and answers to exam questions in this repo does not belong to me in any way. The repo exists, simply to make the process of downloading previous exams easier for other students.
 
-> **Node:** The solutions from March 2021 are missing.. 
+> **Node:** The solutions from March 2021 are not available. 
