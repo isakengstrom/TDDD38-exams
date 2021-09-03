@@ -1,7 +1,7 @@
 # TDDD38-exams
 Previous exam files and solutions for the course [Advanced programming in C++ (TDDD38)](https://www.ida.liu.se/~TDDD38/) at LiU.
 
-The first exam is from March 2016 and the latest is from June 2021. 
+The first exam is from March 2016 and the latest is from August 2021. 
 
 The repo contains two folders:
 
